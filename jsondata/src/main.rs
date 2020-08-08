@@ -40,10 +40,10 @@ struct PttMessages {
 }
 
 fn main()  -> Result<(), Box<dyn std::error::Error>>{
-    let mut wtr = csv::Writer::from_path("HatePolitics-4000-5000.csv")?;
+    let mut wtr = csv::Writer::from_path("Gossiping-39000-40000.csv")?;
     //wtr.write_record(&["文章編號","標題","作者","內容","日期","文章類型","讚數","噓數","中立數"])?;
   
-    let mut file = File::open("HatePolitics-4000-5000.json").unwrap();
+    let mut file = File::open("Gossiping-39000-40000.json").unwrap();
     let mut data = String::new();
     file.read_to_string(&mut data).unwrap();
     let ptt: Ptt = serde_json::from_str::<Ptt>(&data).unwrap();
