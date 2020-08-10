@@ -3,10 +3,12 @@ use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Read;
 use std::env;
+use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize,Clone)]
 struct Ptt {
-    articles: Vec<PttArticle>
+    articles: Vec<PttArticle>,
+    url:Option<String>
 }
 #[derive(Serialize, Deserialize,Clone)]
 struct PttArticle{
@@ -19,7 +21,8 @@ struct PttArticle{
     ip: Option<String>,
     message_count:Option<PttMessageCount>,
     messages:Option<Vec<PttMessages>>,
-    error:Option<String>
+    error:Option<String>,
+    url:Option<String>
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -40,10 +43,33 @@ struct PttMessages {
 }
 
 fn main()  -> Result<(), Box<dyn std::error::Error>>{
-    let mut wtr = csv::Writer::from_path("HatePolitics-4001-5000.csv")?;
+
+    let mut months = HashMap::<String, _>::new();
+
+    months.insert("Jan".to_owned(), "01");
+    months.insert("Feb".to_owned(), "02");
+    months.insert("Mar".to_owned(), "03");
+    months.insert("Apr".to_owned(), "04");
+    months.insert("May".to_owned(), "05");
+    months.insert("Jun".to_owned(), "06");
+    months.insert("Jul".to_owned(), "07");
+    months.insert("Aug".to_owned(), "08");
+    months.insert("Sep".to_owned(), "09");
+    months.insert("Oct".to_owned(), "10");
+    months.insert("Nov".to_owned(), "11");
+    months.insert("Dec".to_owned(), "12");
+    let mut json_file = "Gossiping-{start}-{end}.json" ;
+    let mut csv_file = "Gossiping-{start}-{end}.csv" ;
+  
+    for x in 0..8{
+        let start = x*1000+9000;
+        let end = start+999;
+        print!("{}",json_file.replace("{start}",&start.to_string()).replace("{end}",&end.to_string()));
+ 
+    let mut wtr = csv::Writer::from_path(csv_file.replace("{start}",&start.to_string()).replace("{end}",&end.to_string()))?;
     //wtr.write_record(&["文章編號","標題","作者","內容","日期","文章類型","讚數","噓數","中立數"])?;
   
-    let mut file = File::open("HatePolitics-4001-5000.json").unwrap();
+    let mut file = File::open(json_file.replace("{start}",&start.to_string()).replace("{end}",&end.to_string())).unwrap();
     let mut data = String::new();
     file.read_to_string(&mut data).unwrap();
     let ptt: Ptt = serde_json::from_str::<Ptt>(&data).unwrap();
@@ -79,9 +105,13 @@ fn main()  -> Result<(), Box<dyn std::error::Error>>{
                     break;
                 }
             }
+   let res: Vec<String> = article_date.split_whitespace().map(|s| s.to_string()).collect();
+            if &res.len()>&4{
+                println!("date {},{},{},{}", &article_date,&res.len(),months.get(&res[1]).unwrap(),&res[3]); 
+                
+            }
 
-   println!("date {}", &article_date ); 
-            if related {
+                if related {
                  println!("{}", title); 
                  if title.clone().starts_with("Re:"){
                         wtr.write_record(&[&article_id,&title,&elem.author.unwrap(),&content, &article_date ,&String::from("回文"),&push_count,&boo_count,&neutral_count])?;
@@ -108,6 +138,7 @@ fn main()  -> Result<(), Box<dyn std::error::Error>>{
         }
     }
     wtr.flush()?;
+       }
     println!("{}", env::args().nth(3).ok_or("Missing argument")?);
     Ok(())
 }
