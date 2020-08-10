@@ -58,15 +58,16 @@ fn main()  -> Result<(), Box<dyn std::error::Error>>{
     months.insert("Oct".to_owned(), "10");
     months.insert("Nov".to_owned(), "11");
     months.insert("Dec".to_owned(), "12");
-    let mut json_file = "Gossiping-{start}-{end}.json" ;
-    let mut csv_file = "Gossiping-{start}-{end}.csv" ;
-  
-    for x in 0..8{
-        let start = x*1000+9000;
+    let mut json_file = "HatePolitics-{start}-{end}.json" ;
+    let mut csv_file = "HatePolitics-{start}-{end}.csv" ;
+    let mut wtr = csv::Writer::from_path("HatePolitics.csv")?;
+    wtr.write_record(&["文章編號","標題","作者","內容","日期","文章類型","讚數","噓數","中立數"])?;
+    for x in 0..5{
+        let start = x*1000+1;
         let end = start+999;
         print!("{}",json_file.replace("{start}",&start.to_string()).replace("{end}",&end.to_string()));
  
-    let mut wtr = csv::Writer::from_path(csv_file.replace("{start}",&start.to_string()).replace("{end}",&end.to_string()))?;
+   // let mut wtr = csv::Writer::from_path(csv_file.replace("{start}",&start.to_string()).replace("{end}",&end.to_string()))?;
     //wtr.write_record(&["文章編號","標題","作者","內容","日期","文章類型","讚數","噓數","中立數"])?;
   
     let mut file = File::open(json_file.replace("{start}",&start.to_string()).replace("{end}",&end.to_string())).unwrap();
@@ -96,7 +97,7 @@ fn main()  -> Result<(), Box<dyn std::error::Error>>{
             }
           
              
-            let keywords = ["新冠肺炎","武漢肺炎","COVID-19","新冠"];
+            let keywords = ["新冠肺炎","武漢肺炎","COVID-19"];
             let mut related = false;
             for k in keywords.iter(){
                 if content.contains(k) || title.contains(k) {
@@ -107,17 +108,19 @@ fn main()  -> Result<(), Box<dyn std::error::Error>>{
             }
    let res: Vec<String> = article_date.split_whitespace().map(|s| s.to_string()).collect();
             if &res.len()>&4{
-                println!("date {},{},{},{}", &article_date,&res.len(),months.get(&res[1]).unwrap(),&res[3]); 
+                if !months.contains_key(&res[1]){
+                    continue;
+                }
+                let this_date = format!("{}/{}/{} {}",&res[4],months.get(&res[1]).unwrap(),&res[2],&res[3]);
                 
-            }
 
                 if related {
                  println!("{}", title); 
                  if title.clone().starts_with("Re:"){
-                        wtr.write_record(&[&article_id,&title,&elem.author.unwrap(),&content, &article_date ,&String::from("回文"),&push_count,&boo_count,&neutral_count])?;
+                        wtr.write_record(&[&article_id,&title,&elem.author.unwrap(),&content, &this_date ,&String::from("回文"),&push_count,&boo_count,&neutral_count])?;
 
                     }else{
-                        wtr.write_record(&[&article_id,&title,&elem.author.unwrap(), &content, &article_date ,&String::from("主文"),&push_count,&boo_count,&neutral_count])?;
+                        wtr.write_record(&[&article_id,&title,&elem.author.unwrap(), &content, &this_date ,&String::from("主文"),&push_count,&boo_count,&neutral_count])?;
 
                     }
 
@@ -127,18 +130,22 @@ fn main()  -> Result<(), Box<dyn std::error::Error>>{
                 let messages = elem.messages.unwrap();
                 for m in messages{
                     let push_content = m.push_content.unwrap();
-  
-                  wtr.write_record(&[&article_id,&title,&m.push_userid.unwrap(),&push_content, &m.push_ipdatetime.unwrap(),&m.push_tag.unwrap(),&push_count,&boo_count,&neutral_count])?;
+                    let push_res: Vec<String> = m.push_ipdatetime.unwrap().split_whitespace().map(|s| s.to_string()).collect();
+                    if push_res.len() > 2{
+                    let push_date = format!("{}/{} {}:00",&res[4],&push_res[1],&push_res[2]);
+                    wtr.write_record(&[&article_id,&title,&m.push_userid.unwrap(),&push_content, &push_date,&m.push_tag.unwrap(),&push_count,&boo_count,&neutral_count])?;
                }
+                }
             }
            
+            }
             }
 
            
         }
     }
-    wtr.flush()?;
        }
+      wtr.flush()?;
     println!("{}", env::args().nth(3).ok_or("Missing argument")?);
     Ok(())
 }
