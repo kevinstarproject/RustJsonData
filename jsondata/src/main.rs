@@ -62,10 +62,10 @@ fn main()  -> Result<(), Box<dyn std::error::Error>>{
     let mut csv_file = "Gossiping-{start}-{end}.csv" ;
     let mut wtr = csv::Writer::from_path("Gossiping.csv")?;
     wtr.write_record(&["文章編號","標題","作者","內容","日期","文章類型","讚數","噓數","中立數"])?;
-    for x in 0..26{
+    for x in 0..38{
         let start = x*1000+9000;
         let end = start+999;
-        print!("{}",json_file.replace("{start}",&start.to_string()).replace("{end}",&end.to_string()));
+        println!("{} {}",&x,json_file.replace("{start}",&start.to_string()).replace("{end}",&end.to_string()));
  
    // let mut wtr = csv::Writer::from_path(csv_file.replace("{start}",&start.to_string()).replace("{end}",&end.to_string()))?;
     //wtr.write_record(&["文章編號","標題","作者","內容","日期","文章類型","讚數","噓數","中立數"])?;
@@ -102,7 +102,7 @@ fn main()  -> Result<(), Box<dyn std::error::Error>>{
             for k in keywords.iter(){
                 if content.contains(k) || title.contains(k) {
                     related = true;
-                    println!("{}", k); 
+              //      println!("{}", k); 
                     break;
                 }
             }
@@ -115,7 +115,7 @@ fn main()  -> Result<(), Box<dyn std::error::Error>>{
                 
 
                 if related {
-                 println!("{}", title); 
+                // println!("{}", title); 
                  if title.clone().starts_with("Re:"){
                         wtr.write_record(&[&article_id,&title,&elem.author.unwrap(),&content, &this_date ,&String::from("回文"),&push_count,&boo_count,&neutral_count])?;
 
