@@ -58,12 +58,12 @@ fn main()  -> Result<(), Box<dyn std::error::Error>>{
     months.insert("Oct".to_owned(), "10");
     months.insert("Nov".to_owned(), "11");
     months.insert("Dec".to_owned(), "12");
-    let mut json_file = "HatePolitics-{start}-{end}.json" ;
-    let mut csv_file = "HatePolitics-{start}-{end}.csv" ;
-    let mut wtr = csv::Writer::from_path("HatePolitics.csv")?;
+    let mut json_file = "Gossiping-{start}-{end}.json" ;
+    let mut csv_file = "Gossiping-{start}-{end}.csv" ;
+    let mut wtr = csv::Writer::from_path("Gossiping.csv")?;
     wtr.write_record(&["文章編號","標題","作者","內容","日期","文章類型","讚數","噓數","中立數"])?;
-    for x in 0..5{
-        let start = x*1000+1;
+    for x in 0..26{
+        let start = x*1000+9000;
         let end = start+999;
         print!("{}",json_file.replace("{start}",&start.to_string()).replace("{end}",&end.to_string()));
  
